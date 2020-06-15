@@ -14,7 +14,7 @@
  <menu-path/>
  <interpreter>ruby</interpreter>
  <dsl-interpreter-name/>
- <text># Enter your Ruby code here
+ <text># lef/def to gds converter v01 for OpenRule1um_Qflow Juen 15, 2020 copy left by S. Moriyama (Anagix Corporation)
 module MyMacro
  
   include RBA
@@ -34,31 +34,34 @@ module MyMacro
   ml3_dst = layout.layer(12,0)
   ml2_dst = layout.layer(10,0)
   ml1_dst = layout.layer(8,0)
-
-  ml1label = layout.find_layer(8,1)
-  ml1pin = layout.find_layer(8,2)
-  ml1obs = layout.find_layer(8,3)
+  ml1label = layout.find_layer(1,1)
+  ml1pin = layout.find_layer(1,2)
+  ml1obs = layout.find_layer(1,3)
   layout.move_layer(ml1label, ml1_dst) if ml1label
   layout.move_layer(ml1pin, ml1_dst) if ml1pin
   layout.move_layer(ml1obs, ml1_dst) if ml1obs
 
-  ml2label = layout.find_layer(10,1)
-  ml2pin = layout.find_layer(10,2)
-  ml2obs = layout.find_layer(10,3)
+  ml2label = layout.find_layer(2,1)
+  ml2pin = layout.find_layer(2,2)
+  ml2obs = layout.find_layer(2,3)
   layout.move_layer(ml2label, ml2_dst) if ml1label
   layout.move_layer(ml2pin, ml2_dst) if ml1pin
   layout.move_layer(ml2obs, ml2_dst) if ml1obs
 
-  ml3label = layout.find_layer(12,1)
-  ml3pin = layout.find_layer(12,2)
-  ml3obs = layout.find_layer(12,3)
+  ml3label = layout.find_layer(5,1)
+  ml3pin = layout.find_layer(5,2)
+  ml3obs = layout.find_layer(5,3)
   layout.move_layer(ml3label, ml3_dst) if ml3label
   layout.move_layer(ml3pin, ml3_dst) if ml3pin
-
   lib = Library::library_by_name('OpenRule1um_StdCell_PR')
+  basiclib = Library::library_by_name('OpenRule1um_Basic')
+  mapping = {'VIA_M2_M1' =&gt; 'Via', 'VIA_M3_M2' =&gt; 'Via2'}
   cell.each_inst{|inst|
-    if cell = lib.layout.cell(inst.cell.name) 
-      proxy_index = layout.add_lib_cell(lib, cell.cell_index)
+    cname = inst.cell.name
+    mname = mapping[cname]
+    if cell = (lib.layout.cell(cname) || (mname &amp;&amp; basiclib.layout.cell(mname)))
+      # puts [cname, mname].inspect
+      proxy_index = layout.add_lib_cell(mname ? basiclib : lib, cell.cell_index)
       inst.cell = layout.cell(proxy_index)
     end
   }
