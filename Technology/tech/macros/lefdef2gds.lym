@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>lefdef2gds: convert lef/def layout to gds using OpenRule1um std cells</description>
+ <version/>
+ <category/>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>false</autorun>
+ <autorun-early>false</autorun-early>
+ <shortcut/>
+ <show-in-menu>true</show-in-menu>
+ <group-name/>
+ <menu-path/>
+ <interpreter>ruby</interpreter>
+ <dsl-interpreter-name/>
+ <text># Enter your Ruby code here
+module MyMacro
+ 
+  include RBA
+
+  app = Application.instance
+  mw = app.main_window
+  unless lv = mw.current_view
+    raise "Shape Statistics: No view selected"
+  end
+  cell = lv.active_cellview.cell
+  layout = cell.layout
+  if outline = layout.find_layer('OUTLINE')
+    layout.delete_layer(outline)
+  else
+    raise "DEF/LEF already converted!"
+  end
+  ml3_dst = layout.layer(12,0)
+  ml2_dst = layout.layer(10,0)
+  ml1_dst = layout.layer(8,0)
+
+  ml1label = layout.find_layer(8,1)
+  ml1pin = layout.find_layer(8,2)
+  ml1obs = layout.find_layer(8,3)
+  layout.move_layer(ml1label, ml1_dst) if ml1label
+  layout.move_layer(ml1pin, ml1_dst) if ml1pin
+  layout.move_layer(ml1obs, ml1_dst) if ml1obs
+
+  ml2label = layout.find_layer(10,1)
+  ml2pin = layout.find_layer(10,2)
+  ml2obs = layout.find_layer(10,3)
+  layout.move_layer(ml2label, ml2_dst) if ml1label
+  layout.move_layer(ml2pin, ml2_dst) if ml1pin
+  layout.move_layer(ml2obs, ml2_dst) if ml1obs
+
+  ml3label = layout.find_layer(12,1)
+  ml3pin = layout.find_layer(12,2)
+  ml3obs = layout.find_layer(12,3)
+  layout.move_layer(ml3label, ml3_dst) if ml3label
+  layout.move_layer(ml3pin, ml3_dst) if ml3pin
+
+  lib = Library::library_by_name('OpenRule1um_StdCell_PR')
+  cell.each_inst{|inst|
+    if cell = lib.layout.cell(inst.cell.name) 
+      proxy_index = layout.add_lib_cell(lib, cell.cell_index)
+      inst.cell = layout.cell(proxy_index)
+    end
+  }
+  lv.remove_unused_layers
+end
+</text>
+</klayout-macro>
