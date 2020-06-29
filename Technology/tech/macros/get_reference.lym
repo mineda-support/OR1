@@ -14,7 +14,7 @@
  <menu-path/>
  <interpreter>ruby</interpreter>
  <dsl-interpreter-name/>
- <text># OpenRule1um lvs preprocessor v1.5 June. 15, 2020 copy left by S. Moriyama (Anagix Corporation)
+ <text># OpenRule1um lvs preprocessor v1.51 June. 29, 2020 copy left by S. Moriyama (Anagix Corporation)
 require 'fileutils'
 require 'yaml'
 def get_params lines
@@ -142,10 +142,11 @@ module MyMacro
   c.close
   File.open(reference, 'w:UTF-8'){|f| f.puts desc}
   slink = File.join('lvs_work', reference+'.txt')
+  File.delete slink if File.exist?(slink)
   if /mswin32|mingw/ =~ RUBY_PLATFORM
-    system "WSL cd lvs_work; ln -s ../#{reference}.cir #{reference}.cir.txt"
+    File.link reference, slink
   else
-    File.symlink File.join('..', reference), slink unless File.exist? slink
+    File.symlink "../#{File.basename reference}", slink
   end
 
   puts "#{reference} created under #{Dir.pwd}"
